@@ -1,9 +1,0 @@
-[package]
-name = "sakai-bot"
-version = "0.1.0"
-authors = ["Heman Gandhi <hemangandhi@gmail.com>"]
-
-[dependencies]
-fantoccini = "0.7.2"
-futures = "0.1.14"
-tokio-core = "0.1.8"

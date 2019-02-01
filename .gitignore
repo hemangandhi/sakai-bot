@@ -1,3 +1,5 @@
 /target/
 **/*.rs.bk
 my.config
+geckodriver.log
+__pycache__/
