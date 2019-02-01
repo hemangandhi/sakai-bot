@@ -3,21 +3,33 @@ from collections import Counter
 
 #Thanks to http://norvig.com/spell-correct.html
 
-def P(word, words, N=len(words)):
+def P(word, words, N=None):
     "Probability of `word`."
+    if N is None:
+        N = len(words)
     return words[word] / N
 
 def correction(word, words):
     "Most probable spelling correction for word."
-    return max(candidates(word), lambda x: key=P(x, words))
+    can, d = candidates(word, words)
+    return max(can, key=lambda x: P(x, words)), d
 
-def candidates(word):
+def candidates(word, d):
     "Generate possible spelling corrections for word."
-    return (known([word]) or known(edits1(word)) or known(edits2(word)) or [word])
+    k = known([word], d)
+    if len(k) > 0:
+        return k, 0
+    k = known(edits1(word), d)
+    if len(k) > 0:
+        return k, 1
+    k = known(edits2(word), d)
+    if len(k) > 0:
+        return k, 2
+    return [word], 3
 
-def known(words):
+def known(words, d):
     "The subset of `words` that appear in the dictionary of WORDS."
-    return set(w for w in words if w in WORDS)
+    return set(w for w in words if w in d)
 
 def edits1(word):
     "All edits that are one edit away from `word`."
@@ -35,3 +47,6 @@ def edits2(word):
 
 def most_likely_match(key, values):
     return correction(key.lower(), Counter(v.lower() for v in values))
+
+if __name__ == "__main__":
+    print(most_likely_match("allo", ["hello", "nihao", "bonjour"]))
