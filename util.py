@@ -1,5 +1,6 @@
 import re
 from collections import Counter
+import datetime as dt
 
 #Thanks to http://norvig.com/spell-correct.html
 
@@ -47,6 +48,17 @@ def edits2(word):
 
 def most_likely_match(key, values):
     return correction(key.lower(), Counter(v.lower() for v in values))
+
+def clean_time(time):
+    delta = time - dt.datetime.now()
+    if delta.days > 0:
+        if delta.days > 7:
+            return str(delta.days//7) + " weeks"
+        return str(delta.days) + " days"
+    s = delta.seconds
+    if s > 60 * 60:
+        return str(s//(60 * 60)) + " hours"
+    return str(s//60) + " minutes"
 
 if __name__ == "__main__":
     print(most_likely_match("allo", ["hello", "nihao", "bonjour"]))

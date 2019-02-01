@@ -1,9 +1,10 @@
 from functools import wraps
+import datetime as dt
 
 import dateparser as dp
 
 import sakai
-from util import most_likely_match
+from util import most_likely_match, clean_time
 
 class Functionality:
     fns = dict()
@@ -18,11 +19,12 @@ class Functionality:
         self.args = args
         self.function = function
         self.name = name
+        self.docs = docs
         Functionality.fns[name] = self
     def __call__(self, *args):
         if len(args) not in self.args:
-            return False, self.docs
-        return True, self.function(*args)
+            return False, "{} is not a valid number of arguments".format(len(args))
+        return self.function(*args)
     def __str__(self):
         return self.docs
     def __repr__(self):
@@ -38,7 +40,7 @@ where command is one of:
 {}
     '''
 
-    commands = '\n'.join(n.name for n in Functionality.fns.keys())
+    commands = '\n'.join("\t{}: {}".format(k, Functionality.fns[k].docs) for k in Functionality.fns.keys())
     start = template.format(acc, commands)
     if len(special) > 0:
         return start + "\nMore specifically:\n" + special
@@ -58,8 +60,8 @@ def parse_args(argv):
         j = i
         while j < len(argv) and most_likely_match(argv[j], ["then", "--then"])[1] > 2:
             j += 1
+        ok, v = Functionality.fns[mlm](*argv[i + 1:j])
         i = j
-        ok, v = Functionality.fns[mlm](argv[i:j])
         if not ok:
             return usage(rv, '{}: {}'.format(mlm, v))
         rv += v + '\n'
@@ -68,14 +70,15 @@ def parse_args(argv):
 @Functionality.add_function({0}, 'todo', 'Returns the todo list sorted by due dates from sakai')
 def todo():
     vals = []
-    for course in list_courses(browser):
-        for asst in find_assignments(browser, course[0]):
+    for course in sakai.list_courses(browser):
+        for asst in sakai.find_assignments(browser, course[0]):
             title, date = asst
             date = dp.parse(date)
-            vals.append((course, title, date))
+            if date >= dt.datetime.now():
+                vals.append((course, title, date))
 
-    vals = sorted(vals, key = lambda a: a[1])
-    return '\n'.join("{} for {} due on {}".format(v[1], v[0], v[2].strftime('%m/%d/%y')) for v in vals)
+    vals = sorted(vals, key = lambda a: a[2])
+    return True, '\n'.join("{} for {} due in {}".format(v[1], v[0][1], clean_time(v[2])) for v in vals)
 
 if __name__ == "__main__":
     import sys
