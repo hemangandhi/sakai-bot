@@ -1,1 +1,8 @@
-selenium
+dateparser==0.7.0
+python-dateutil==2.7.5
+pytz==2018.9
+regex==2019.1.24
+selenium==3.141.0
+six==1.12.0
+tzlocal==1.5.1
+urllib3==1.24.1

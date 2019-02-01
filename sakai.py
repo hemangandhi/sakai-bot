@@ -32,6 +32,7 @@ class SakaiBrowser:
             netid = input("Enter your netid > ")
             password = getpass("Enter your password > ")
             self.login(netid, password, True)
+        print('=' * 50)
         self.logged_in = True
 
     def __getattr__(self, name):

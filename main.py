@@ -61,13 +61,13 @@ def parse_args(argv):
         while j < len(argv) and most_likely_match(argv[j], ["then", "--then"])[1] > 2:
             j += 1
         ok, v = Functionality.fns[mlm](*argv[i + 1:j])
-        i = j
+        i = j + 1
         if not ok:
             return usage(rv, '{}: {}'.format(mlm, v))
-        rv += v + '\n'
+        rv += v + '\n' + '=' * 50 + '\n'
     return rv
 
-@Functionality.add_function({0}, 'todo', 'Returns the todo list sorted by due dates from sakai')
+@Functionality.add_function({0}, 'todo', 'Outputs a todo list sorted by due dates from sakai')
 def todo():
     vals = []
     for course in sakai.list_courses(browser):
@@ -78,7 +78,11 @@ def todo():
                 vals.append((course, title, date))
 
     vals = sorted(vals, key = lambda a: a[2])
-    return True, '\n'.join("{} for {} due in {}".format(v[1], v[0][1], clean_time(v[2])) for v in vals)
+    return True, "TODO:\n" + '\n'.join("{} for {} due in {}".format(v[1], v[0][1], clean_time(v[2])) for v in vals)
+
+@Functionality.add_function({0}, 'courses', 'Outputs the list of starred courses in Sakai')
+def courses():
+    return True, "COURSES:\n" + '\n'.join(course[1] for course in sakai.list_courses(browser))
 
 if __name__ == "__main__":
     import sys
